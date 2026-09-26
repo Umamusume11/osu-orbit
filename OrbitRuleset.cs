@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
-using osu.Framework.Input.Bindings;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mods;
@@ -20,7 +19,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Orbit
 {
-    // 1. MAIN RULESET CLASS
+    // 1. MAIN RULESET ENTRY POINT
     public class OrbitRuleset : Ruleset
     {
         public override string Description => "osu!orbit - Dual Planet Rhythm";
@@ -44,7 +43,7 @@ namespace osu.Game.Rulesets.Orbit
         };
     }
 
-    // 2. INPUT MANAGER & ACTIONS
+    // 2. MODERN CONSOLE INPUT CONTROLLER
     public class OrbitInputContainer : PassThroughInputManager, IKeyBindingHandler<OrbitAction>
     {
         private readonly OrbitPlayfield playfield;
@@ -71,7 +70,7 @@ namespace osu.Game.Rulesets.Orbit
         Button2
     }
 
-    // 3. GAMEPLAY PLAYFIELD & PLANET ORBIT MECHANICS
+    // 3. CORE PLAYFIELD & ORBIT ENGINE
     public class OrbitPlayfield : Playfield
     {
         private readonly Circle firePlanet;
@@ -117,7 +116,7 @@ namespace osu.Game.Rulesets.Orbit
         }
     }
 
-    // 4. DRAWABLE RULESET WITH INTEGRATED INPUT
+    // 4. DRAWABLE REPRESENTATION FRAMEWORK
     public class DrawableOrbitRuleset : DrawableRuleset<OrbitHitObject>
     {
         private OrbitPlayfield orbitPlayfield;
@@ -135,7 +134,7 @@ namespace osu.Game.Rulesets.Orbit
             => new DrawableOrbitHitObject(h);
     }
 
-    // 5. HIT OBJECT DATA STRUCTURE
+    // 5. DATA COMPONENT
     public class OrbitHitObject : HitObject, IHasPosition
     {
         public float X { get; set; }
@@ -143,7 +142,7 @@ namespace osu.Game.Rulesets.Orbit
         public Vector2 Position => new Vector2(X, Y);
     }
 
-    // 6. VISUAL HIT OBJECT REPRESENTATION
+    // 6. VISUAL RENDERING ELEMENT
     public class DrawableOrbitHitObject : DrawableHitObject<OrbitHitObject>
     {
         public DrawableOrbitHitObject(OrbitHitObject hitObject) : base(hitObject)
@@ -176,7 +175,7 @@ namespace osu.Game.Rulesets.Orbit
         }
     }
 
-    // 7. STANDARD BEATMAP CONVERTER ENGINE
+    // 7. BEATMAP CONVERSION ROUTINE
     public class OrbitBeatmapConverter : BeatmapConverter<OrbitHitObject>
     {
         public OrbitBeatmapConverter(IBeatmap beatmap, Ruleset ruleset) : base(beatmap, ruleset) { }
@@ -193,15 +192,12 @@ namespace osu.Game.Rulesets.Orbit
             => new Beatmap<OrbitHitObject>();
     }
 
-    // 8. PERFORMANCE & DIFFICULTY CALCULATOR
+    // 8. SIMPLIFIED DIFFICULTY STUB
     public class OrbitDifficultyCalculator : DifficultyCalculator
     {
         public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-        
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate) 
-            => new DifficultyAttributes();
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) 
-            => Array.Empty<Skill>();
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods)
+            => new DifficultyAttributes();
     }
 }
