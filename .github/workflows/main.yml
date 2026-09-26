@@ -18,7 +18,7 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Compile Ruleset DLL
-      run: dotnet build -c Release /p:MesaGL=false
+      run: dotnet build -c Release -p:UnityBuild=false -p:NoWarn=NU1605
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
