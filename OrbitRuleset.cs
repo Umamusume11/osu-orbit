@@ -49,20 +49,6 @@ namespace osu.Game.Rulesets.Orbit
         });
     }
 
-    public class OrbitInputManager : RulesetInputManager<OrbitAction>
-    {
-        public OrbitInputManager(RulesetInfo ruleset)
-            : base(ruleset, 0, SimultaneousBindingMode.Unique)
-        {
-        }
-    }
-
-    public enum OrbitAction
-    {
-        Button1,
-        Button2
-    }
-
     public class OrbitPlayfield : Playfield
     {
         private readonly Circle firePlanet;
@@ -78,18 +64,8 @@ namespace osu.Game.Rulesets.Orbit
         {
             InternalChildren = new Drawable[]
             {
-                firePlanet = new Circle
-                {
-                    Size = new Vector2(25),
-                    Origin = Anchor.Centre,
-                    Colour = Color4.Red
-                },
-                waterPlanet = new Circle
-                {
-                    Size = new Vector2(25),
-                    Origin = Anchor.Centre,
-                    Colour = Color4.DeepSkyBlue
-                }
+                firePlanet = new Circle { Size = new Vector2(25), Origin = Anchor.Centre, Colour = Color4.Red },
+                waterPlanet = new Circle { Size = new Vector2(25), Origin = Anchor.Centre, Colour = Color4.DeepSkyBlue }
             };
         }
 
@@ -102,7 +78,6 @@ namespace osu.Game.Rulesets.Orbit
         protected override void Update()
         {
             base.Update();
-
             double currentTime = Time.Current;
             float speedMultiplier = 0.2f;
             float angle = (float)(currentTime * speedMultiplier % 360);
@@ -111,18 +86,12 @@ namespace osu.Game.Rulesets.Orbit
             if (isWaterPivot)
             {
                 waterPlanet.Position = centerPosition;
-                firePlanet.Position = centerPosition + new Vector2(
-                    (float)Math.Cos(radians) * orbit_radius,
-                    (float)Math.Sin(radians) * orbit_radius
-                );
+                firePlanet.Position = centerPosition + new Vector2((float)Math.Cos(radians) * orbit_radius, (float)Math.Sin(radians) * orbit_radius);
             }
             else
             {
                 firePlanet.Position = centerPosition;
-                waterPlanet.Position = centerPosition + new Vector2(
-                    (float)Math.Cos(radians) * orbit_radius,
-                    (float)Math.Sin(radians) * orbit_radius
-                );
+                waterPlanet.Position = centerPosition + new Vector2((float)Math.Cos(radians) * orbit_radius, (float)Math.Sin(radians) * orbit_radius);
             }
         }
     }
@@ -134,31 +103,16 @@ namespace osu.Game.Rulesets.Orbit
         public DrawableOrbitRuleset(Ruleset ruleset, IBeatmap beatmap, IReadOnlyList<Mod> mods = null)
             : base(ruleset, beatmap, mods) { }
 
-        protected override Playfield CreatePlayfield() 
-            => orbitPlayfield = new OrbitPlayfield();
-
-        protected override PlayfieldRenderer CreatePlayfieldRenderer() 
-            => new PlayfieldRenderer();
-
-        protected override PassThroughInputManager CreateInputManager() 
-            => new OrbitInputManager(Ruleset.RulesetInfo);
-
-        protected override DrawableHitObject<OrbitHitObject> CreateDrawableRepresentation(OrbitHitObject h)
-            => new DrawableOrbitHitObject(h);
+        protected override Playfield CreatePlayfield() => orbitPlayfield = new OrbitPlayfield();
+        protected override PlayfieldRenderer CreatePlayfieldRenderer() => new PlayfieldRenderer();
+        protected override PassThroughInputManager CreateInputManager() => new OrbitInputManager(Ruleset.RulesetInfo);
+        protected override DrawableHitObject<OrbitHitObject> CreateDrawableRepresentation(OrbitHitObject h) => new DrawableOrbitHitObject(h);
 
         public bool OnPressed(KeyBindingPressEvent<OrbitAction> e)
         {
             orbitPlayfield?.SwitchPlanetPivot();
-
-            var nextNote = orbitPlayfield?.AliveInternalChildren
-                .OfType<DrawableOrbitHitObject>()
-                .FirstOrDefault(n => !n.Result.HasResult);
-
-            if (nextNote != null)
-            {
-                nextNote.TriggerResult();
-            }
-
+            var nextNote = orbitPlayfield?.AliveInternalChildren.OfType<DrawableOrbitHitObject>().FirstOrDefault(n => !n.Result.HasResult);
+            if (nextNote != null) nextNote.TriggerResult();
             return true;
         }
     }
@@ -172,88 +126,50 @@ namespace osu.Game.Rulesets.Orbit
 
     public class DrawableOrbitHitObject : DrawableHitObject<OrbitHitObject>
     {
-        public DrawableOrbitHitObject(OrbitHitObject hitObject)
-            : base(hitObject)
+        public DrawableOrbitHitObject(OrbitHitObject hitObject) : base(hitObject)
         {
             Size = new Vector2(40);
             Origin = Anchor.Centre;
             Position = hitObject.Position;
-
             Alpha = 0;
-            Child = new Circle
-            {
-                RelativeSizeAxes = Axes.Both,
-                Colour = Color4.White,
-                Anchor = Anchor.Centre,
-                Origin = Anchor.Centre
-            };
+            Child = new Circle { RelativeSizeAxes = Axes.Both, Colour = Color4.White, Anchor = Anchor.Centre, Origin = Anchor.Centre };
         }
 
         protected override void CheckForResult(bool userTriggered, double timeOffset)
         {
             if (!userTriggered)
             {
-                if (timeOffset > 150)
-                    ApplyResult(HitResult.Miss);
+                if (timeOffset > 150) ApplyResult(HitResult.Miss);
                 return;
             }
-
             double absOffset = Math.Abs(timeOffset);
-
-            if (absOffset <= 40)
-                ApplyResult(HitResult.Great);
-            else if (absOffset <= 90)
-                ApplyResult(HitResult.Ok);
-            else if (absOffset <= 150)
-                ApplyResult(HitResult.Meh);
-            else
-                ApplyResult(HitResult.Miss);
+            if (absOffset <= 40) ApplyResult(HitResult.Great);
+            else if (absOffset <= 90) ApplyResult(HitResult.Ok);
+            else if (absOffset <= 150) ApplyResult(HitResult.Meh);
+            else ApplyResult(HitResult.Miss);
         }
 
-        protected override void UpdateInitialTransforms()
-        {
-            base.UpdateInitialTransforms();
-            this.FadeIn(500);
-        }
+        protected override void UpdateInitialTransforms() { base.UpdateInitialTransforms(); this.FadeIn(500); }
     }
 
     public class OrbitBeatmapConverter : BeatmapConverter<OrbitHitObject>
     {
         public OrbitBeatmapConverter(IBeatmap beatmap, Ruleset ruleset) : base(beatmap, ruleset) { }
-
         public override bool CanConvert() => true;
-
         protected override IEnumerable<OrbitHitObject> ConvertHitObject(HitObject original, IBeatmap beatmap)
         {
-            float posX = 512;
-            float posY = 384;
-
-            if (original is IHasPosition positionable)
-            {
-                posX = positionable.X;
-                posY = positionable.Y;
-            }
-
-            yield return new OrbitHitObject
-            {
-                StartTime = original.StartTime,
-                X = posX,
-                Y = posY
-            };
+            float posX = 512, posY = 384;
+            if (original is IHasPosition positionable) { posX = positionable.X; posY = positionable.Y; }
+            yield return new OrbitHitObject { StartTime = original.StartTime, X = posX, Y = posY };
         }
-
         protected override Beatmap<OrbitHitObject> CreateBeatmap() => new Beatmap<OrbitHitObject>();
     }
 
     public class OrbitDifficultyCalculator : DifficultyCalculator
     {
-        public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) 
-            : base(ruleset, beatmap) { }
-
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
-            => new DifficultyAttributes();
-
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
-            => Array.Empty<Skill>();
+        public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate) => new DifficultyAttributes();
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) => Array.Empty<Skill>();
     }
 }
+
