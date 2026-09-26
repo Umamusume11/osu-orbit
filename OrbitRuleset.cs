@@ -20,6 +20,7 @@ using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Orbit
 {
+    // 1. MAIN RULESET CLASS
     public class OrbitRuleset : Ruleset
     {
         public override string Description => "osu!orbit - Dual Planet Rhythm";
@@ -41,14 +42,36 @@ namespace osu.Game.Rulesets.Orbit
         {
             Icon = FontAwesome.Solid.CircleNotch
         };
-
-        public override IConvertibleRebindings<OrbitAction> GetReceiver() => new RebindableKeys<OrbitAction>(new()
-        {
-            { OrbitAction.Button1, new[] { InputKey.Z, InputKey.MouseLeft } },
-            { OrbitAction.Button2, new[] { InputKey.X, InputKey.MouseRight } }
-        });
     }
 
+    // 2. INPUT MANAGER & ACTIONS
+    public class OrbitInputContainer : PassThroughInputManager, IKeyBindingHandler<OrbitAction>
+    {
+        private readonly OrbitPlayfield playfield;
+
+        public OrbitInputContainer(OrbitPlayfield playfield)
+        {
+            this.playfield = playfield;
+        }
+
+        public bool OnPressed(KeyBindingPressEvent<OrbitAction> e)
+        {
+            playfield?.SwitchPlanetPivot();
+            return true;
+        }
+
+        public void OnReleased(KeyBindingReleaseEvent<OrbitAction> e)
+        {
+        }
+    }
+
+    public enum OrbitAction
+    {
+        Button1,
+        Button2
+    }
+
+    // 3. GAMEPLAY PLAYFIELD & PLANET ORBIT MECHANICS
     public class OrbitPlayfield : Playfield
     {
         private readonly Circle firePlanet;
@@ -57,8 +80,6 @@ namespace osu.Game.Rulesets.Orbit
         private const float orbit_radius = 80f;
         private Vector2 centerPosition = new Vector2(512, 384);
         private bool isWaterPivot = true;
-
-        public System.Collections.Generic.IEnumerable<Drawable> AliveInternalChildren => AliveChildren;
 
         public OrbitPlayfield()
         {
@@ -96,6 +117,7 @@ namespace osu.Game.Rulesets.Orbit
         }
     }
 
+    // 4. DRAWABLE RULESET WITH INTEGRATED INPUT
     public class DrawableOrbitRuleset : DrawableRuleset<OrbitHitObject>
     {
         private OrbitPlayfield orbitPlayfield;
@@ -103,20 +125,17 @@ namespace osu.Game.Rulesets.Orbit
         public DrawableOrbitRuleset(Ruleset ruleset, IBeatmap beatmap, IReadOnlyList<Mod> mods = null)
             : base(ruleset, beatmap, mods) { }
 
-        protected override Playfield CreatePlayfield() => orbitPlayfield = new OrbitPlayfield();
-        protected override PlayfieldRenderer CreatePlayfieldRenderer() => new PlayfieldRenderer();
-        protected override PassThroughInputManager CreateInputManager() => new OrbitInputManager(Ruleset.RulesetInfo);
-        protected override DrawableHitObject<OrbitHitObject> CreateDrawableRepresentation(OrbitHitObject h) => new DrawableOrbitHitObject(h);
+        protected override Playfield CreatePlayfield() 
+            => orbitPlayfield = new OrbitPlayfield();
 
-        public bool OnPressed(KeyBindingPressEvent<OrbitAction> e)
-        {
-            orbitPlayfield?.SwitchPlanetPivot();
-            var nextNote = orbitPlayfield?.AliveInternalChildren.OfType<DrawableOrbitHitObject>().FirstOrDefault(n => !n.Result.HasResult);
-            if (nextNote != null) nextNote.TriggerResult();
-            return true;
-        }
+        protected override PassThroughInputManager CreateInputManager() 
+            => new OrbitInputContainer(orbitPlayfield);
+
+        protected override DrawableHitObject<OrbitHitObject> CreateDrawableRepresentation(OrbitHitObject h)
+            => new DrawableOrbitHitObject(h);
     }
 
+    // 5. HIT OBJECT DATA STRUCTURE
     public class OrbitHitObject : HitObject, IHasPosition
     {
         public float X { get; set; }
@@ -124,6 +143,7 @@ namespace osu.Game.Rulesets.Orbit
         public Vector2 Position => new Vector2(X, Y);
     }
 
+    // 6. VISUAL HIT OBJECT REPRESENTATION
     public class DrawableOrbitHitObject : DrawableHitObject<OrbitHitObject>
     {
         public DrawableOrbitHitObject(OrbitHitObject hitObject) : base(hitObject)
@@ -149,26 +169,39 @@ namespace osu.Game.Rulesets.Orbit
             else ApplyResult(HitResult.Miss);
         }
 
-        protected override void UpdateInitialTransforms() { base.UpdateInitialTransforms(); this.FadeIn(500); }
+        protected override void UpdateInitialTransforms() 
+        { 
+            base.UpdateInitialTransforms(); 
+            this.FadeIn(500); 
+        }
     }
 
+    // 7. STANDARD BEATMAP CONVERTER ENGINE
     public class OrbitBeatmapConverter : BeatmapConverter<OrbitHitObject>
     {
         public OrbitBeatmapConverter(IBeatmap beatmap, Ruleset ruleset) : base(beatmap, ruleset) { }
         public override bool CanConvert() => true;
+        
         protected override IEnumerable<OrbitHitObject> ConvertHitObject(HitObject original, IBeatmap beatmap)
         {
             float posX = 512, posY = 384;
             if (original is IHasPosition positionable) { posX = positionable.X; posY = positionable.Y; }
             yield return new OrbitHitObject { StartTime = original.StartTime, X = posX, Y = posY };
         }
-        protected override Beatmap<OrbitHitObject> CreateBeatmap() => new Beatmap<OrbitHitObject>();
+
+        protected override Beatmap<OrbitHitObject> CreateBeatmap() 
+            => new Beatmap<OrbitHitObject>();
     }
 
+    // 8. PERFORMANCE & DIFFICULTY CALCULATOR
     public class OrbitDifficultyCalculator : DifficultyCalculator
     {
         public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate) => new DifficultyAttributes();
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) => Array.Empty<Skill>();
+        
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate) 
+            => new DifficultyAttributes();
+
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) 
+            => Array.Empty<Skill>();
     }
 }
