@@ -7,13 +7,9 @@ using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.UI;
 using osu.Game.Rulesets.Objects;
-using osu.Game.Rulesets.Objects.Types;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input.Events;
 using osu.Game.Rulesets.Objects.Drawables;
-using osu.Game.Rulesets.Scoring;
-using System.Linq;
 using osuTK;
 using osuTK.Graphics;
 
@@ -43,34 +39,7 @@ namespace osu.Game.Rulesets.Orbit
         };
     }
 
-    // 2. MODERN CONSOLE INPUT CONTROLLER
-    public class OrbitInputContainer : PassThroughInputManager, IKeyBindingHandler<OrbitAction>
-    {
-        private readonly OrbitPlayfield playfield;
-
-        public OrbitInputContainer(OrbitPlayfield playfield)
-        {
-            this.playfield = playfield;
-        }
-
-        public bool OnPressed(KeyBindingPressEvent<OrbitAction> e)
-        {
-            playfield?.SwitchPlanetPivot();
-            return true;
-        }
-
-        public void OnReleased(KeyBindingReleaseEvent<OrbitAction> e)
-        {
-        }
-    }
-
-    public enum OrbitAction
-    {
-        Button1,
-        Button2
-    }
-
-    // 3. CORE PLAYFIELD & ORBIT ENGINE
+    // 2. CORE PLAYFIELD & ORBIT ENGINE
     public class OrbitPlayfield : Playfield
     {
         private readonly Circle firePlanet;
@@ -116,66 +85,25 @@ namespace osu.Game.Rulesets.Orbit
         }
     }
 
-    // 4. DRAWABLE REPRESENTATION FRAMEWORK
+    // 3. DRAWABLE REPRESENTATION FRAMEWORK
     public class DrawableOrbitRuleset : DrawableRuleset<OrbitHitObject>
     {
-        private OrbitPlayfield orbitPlayfield;
-
         public DrawableOrbitRuleset(Ruleset ruleset, IBeatmap beatmap, IReadOnlyList<Mod> mods = null)
             : base(ruleset, beatmap, mods) { }
 
         protected override Playfield CreatePlayfield() 
-            => orbitPlayfield = new OrbitPlayfield();
-
-        protected override PassThroughInputManager CreateInputManager() 
-            => new OrbitInputContainer(orbitPlayfield);
+            => new OrbitPlayfield();
 
         protected override DrawableHitObject<OrbitHitObject> CreateDrawableRepresentation(OrbitHitObject h)
-            => new DrawableOrbitHitObject(h);
+            => null;
     }
 
-    // 5. DATA COMPONENT
-    public class OrbitHitObject : HitObject, IHasPosition
+    // 4. DATA COMPONENT
+    public class OrbitHitObject : HitObject
     {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public Vector2 Position => new Vector2(X, Y);
     }
 
-    // 6. VISUAL RENDERING ELEMENT
-    public class DrawableOrbitHitObject : DrawableHitObject<OrbitHitObject>
-    {
-        public DrawableOrbitHitObject(OrbitHitObject hitObject) : base(hitObject)
-        {
-            Size = new Vector2(40);
-            Origin = Anchor.Centre;
-            Position = hitObject.Position;
-            Alpha = 0;
-            Child = new Circle { RelativeSizeAxes = Axes.Both, Colour = Color4.White, Anchor = Anchor.Centre, Origin = Anchor.Centre };
-        }
-
-        protected override void CheckForResult(bool userTriggered, double timeOffset)
-        {
-            if (!userTriggered)
-            {
-                if (timeOffset > 150) ApplyResult(HitResult.Miss);
-                return;
-            }
-            double absOffset = Math.Abs(timeOffset);
-            if (absOffset <= 40) ApplyResult(HitResult.Great);
-            else if (absOffset <= 90) ApplyResult(HitResult.Ok);
-            else if (absOffset <= 150) ApplyResult(HitResult.Meh);
-            else ApplyResult(HitResult.Miss);
-        }
-
-        protected override void UpdateInitialTransforms() 
-        { 
-            base.UpdateInitialTransforms(); 
-            this.FadeIn(500); 
-        }
-    }
-
-    // 7. BEATMAP CONVERSION ROUTINE
+    // 5. BEATMAP CONVERSION ROUTINE
     public class OrbitBeatmapConverter : BeatmapConverter<OrbitHitObject>
     {
         public OrbitBeatmapConverter(IBeatmap beatmap, Ruleset ruleset) : base(beatmap, ruleset) { }
@@ -183,31 +111,18 @@ namespace osu.Game.Rulesets.Orbit
         
         protected override IEnumerable<OrbitHitObject> ConvertHitObject(HitObject original, IBeatmap beatmap)
         {
-            float posX = 512, posY = 384;
-            if (original is IHasPosition positionable) { posX = positionable.X; posY = positionable.Y; }
-            yield return new OrbitHitObject { StartTime = original.StartTime, X = posX, Y = posY };
+            yield return new OrbitHitObject { StartTime = original.StartTime };
         }
 
         protected override Beatmap<OrbitHitObject> CreateBeatmap() 
             => new Beatmap<OrbitHitObject>();
     }
 
-    // 8. MODERN ADAPTIVE DIFFICULTY CALCULATOR
+    // 6. DUMMY DIFFICULTY CALCULATOR (PREVENTS FRAMEWORK BREAKAGE)
     public class OrbitDifficultyCalculator : DifficultyCalculator
     {
         public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
 
         protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods)
-            => new DifficultyAttributes(mods.ToArray(), 0);
-
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
-            => Enumerable.Empty<DifficultyHitObject>();
-
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods, Skill[] skills)
-            => new DifficultyAttributes(mods.ToArray(), 0);
-
-        protected override Skill[] CreateSkills(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods, double clockRate)
-            => Array.Empty<Skill>();
+            => new DifficultyAttributes();
     }
-}
-
