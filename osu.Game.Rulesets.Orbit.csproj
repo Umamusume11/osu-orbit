@@ -4,16 +4,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>osu.Game.Rulesets.Orbit</AssemblyName>
     <RootNamespace>osu.Game.Rulesets.Orbit</RootNamespace>
-    
-    <!-- Memaksa robot GitHub mencari langsung ke gudang internal ppy osu! -->
-    <RestoreSources>
-      https://nuget.org;
-      https://ppy.sh
-    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ppy.osu.Game" Version="2026.916.0" />
+    <PackageReference Include="ppy.osu.Game" Version="2026.115.0" />
   </ItemGroup>
 </Project>
 
