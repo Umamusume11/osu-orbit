@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>osu.Game.Rulesets.Orbit</AssemblyName>
+    <RootNamespace>osu.Game.Rulesets.Orbit</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ppy.osu.Game" Version="2026.921.0" />
+    <PackageReference Include="ppy.osu.Framework" Version="2026.921.0" />
+  </ItemGroup>
+</Project>
