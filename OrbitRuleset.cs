@@ -192,12 +192,22 @@ namespace osu.Game.Rulesets.Orbit
             => new Beatmap<OrbitHitObject>();
     }
 
-    // 8. SIMPLIFIED DIFFICULTY STUB
+    // 8. MODERN ADAPTIVE DIFFICULTY CALCULATOR
     public class OrbitDifficultyCalculator : DifficultyCalculator
     {
         public OrbitDifficultyCalculator(Ruleset ruleset, IWorkingBeatmap beatmap) : base(ruleset, beatmap) { }
 
         protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods)
-            => new DifficultyAttributes();
+            => new DifficultyAttributes(mods.ToArray(), 0);
+
+        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+            => Enumerable.Empty<DifficultyHitObject>();
+
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods, Skill[] skills)
+            => new DifficultyAttributes(mods.ToArray(), 0);
+
+        protected override Skill[] CreateSkills(IBeatmap beatmap, System.ReadOnlySpan<Mod> mods, double clockRate)
+            => Array.Empty<Skill>();
     }
 }
+
