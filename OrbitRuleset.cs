@@ -172,4 +172,3 @@ namespace osu.Game.Rulesets.Orbit
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) => Array.Empty<Skill>();
     }
 }
-
